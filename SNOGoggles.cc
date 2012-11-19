@@ -23,6 +23,7 @@ using namespace std;
 #include <Viewer/Semaphore.hh>
 #include <Viewer/LoadRootFileThread.hh>
 #include <Viewer/LoadZdabFileThread.hh>
+#include <Viewer/LoadOrcaFileThread.hh>
 #include <Viewer/ReceiverThread.hh>
 #include <Viewer/ConfigurationFile.hh>
 #include <Viewer/ConfigurationTable.hh>
@@ -132,12 +133,17 @@ ParseArguments( int argc, char** argv )
   static struct option opts[] = { {"help", 0, NULL, 'h'}, {"stream", 2, NULL, 's'}, {"config", 1, NULL, 'c'}, {0,0,0,0} };
   CmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "s::hc:", opts, &option_index);
+  int c = getopt_long(argc, argv, "o::s::hc:", opts, &option_index);
   while (c != -1) 
     {
       switch (c) 
         {
         case 'h': PrintHelp(); exit(0); break;
+        case 'o': 
+          {
+            options.fStream = false;
+            options.fArgument = optarg;    
+          }      
         case 's': 
           {
             options.fStream = true; 
@@ -155,7 +161,7 @@ ParseArguments( int argc, char** argv )
           break;
         case 'c': options.fConfigFile = optarg; break;
         }
-      c = getopt_long(argc, argv, "s::h", opts, &option_index);
+      c = getopt_long(argc, argv, "o::s::hc", opts, &option_index);
     }
   if( option_index >= argc || argc == 1 )
     {
@@ -177,6 +183,7 @@ PrintHelp()
   cout << " -h        show this help message and exit" << endl;
   cout << " -s=addr   connect to a zdab dispatcher at addr" << endl;
   cout << " -c path   use the configuration script at path" << endl;
+  cout << " -o FileName.ORCA  load a raw orca file" << endl;
 }
 
 ConfigurationFile*
