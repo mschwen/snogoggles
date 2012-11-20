@@ -85,6 +85,8 @@ int main( int argc, char *argv[] )
       Semaphore sema;
       if( options.fArgument.substr( options.fArgument.size() - 4 ) == string( "root" ) )
         loadData = new LoadRootFileThread( options.fArgument, sema );
+      else if ( options.fArgument.substr( options.fArgument.size() - 4 ) == string( "4882" ) )
+        loadData = new LoadOrcaFileThread( options.fArgument, sema );
       else
         {
           loadData = new LoadZdabFileThread( options.fArgument, sema );
@@ -133,7 +135,7 @@ ParseArguments( int argc, char** argv )
   static struct option opts[] = { {"help", 0, NULL, 'h'}, {"stream", 2, NULL, 's'}, {"config", 1, NULL, 'c'}, {0,0,0,0} };
   CmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "o::s::hc:", opts, &option_index);
+  int c = getopt_long(argc, argv, "o:s::hc:", opts, &option_index);
   while (c != -1) 
     {
       switch (c) 
@@ -142,8 +144,9 @@ ParseArguments( int argc, char** argv )
         case 'o': 
           {
             options.fStream = false;
-            options.fArgument = optarg;    
+            options.fArgument = "Run4882";    
           }      
+        break;
         case 's': 
           {
             options.fStream = true; 
@@ -161,7 +164,7 @@ ParseArguments( int argc, char** argv )
           break;
         case 'c': options.fConfigFile = optarg; break;
         }
-      c = getopt_long(argc, argv, "o::s::hc", opts, &option_index);
+      c = getopt_long(argc, argv, "o:s::hc", opts, &option_index);
     }
   if( option_index >= argc || argc == 1 )
     {

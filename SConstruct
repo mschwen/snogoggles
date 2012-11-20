@@ -39,6 +39,12 @@ env.Append(LINKFLAGS=["-g"])
 # Add a link to the include directory of the viewer
 env.Append( CPPPATH = [ os.environ["VIEWERROOT"] + "/include" ] )
 
+#add orcaroot
+env.Append( CPPPATH = "/home/sstream/OrcaRoot/IO" )
+env.Append( CPPPATH = "/home/sstream/OrcaRoot/Processors" )
+env.Append( CPPPATH = "/home/sstream/OrcaRoot/Decoders" )
+env.Append( CPPPATH = "/home/sstream/OrcaRoot/Util" )
+
 # Creates SNOGoggles Library
 # Can be used by RAT to create a RAT processor version of SNOGoggles
 env.StaticLibrary( os.environ["VIEWERROOT"] + "/lib/snogoggles", viewer_obj)

@@ -33,10 +33,6 @@ namespace DS
 }
 }
 
-//namespace OrcaRoot
-//{
-//  class ORFileReader;
-//}
 
 namespace Viewer
 {
@@ -52,23 +48,23 @@ public:
   virtual void
   Run();
 private:
-  /// Must get the run tree from a root file to get the PMTProperties
   void LoadRootFile();
-
-  /// Loads the next event if possible, returns false if no more events
-  bool LoadNextEvent();
+  void LoadOrcaFile();
 
   std::string fFileName;
-
+  
   int fMCEvent;
   Semaphore& fSemaphore;
 
   /// Main ORCA file to load from
-  ORFileReader* fFile;
+  ORFileReader* fOrcaFile;
 
   /// Root file part for the PMTProperties 
+  TFile* fFile;
+  TTree* fTree;
   TFile* fRootFile;
   TTree* fRunTree;
+  RAT::DS::Root* fDS;
   RAT::DS::Run* fRun;
 };
 

@@ -2,11 +2,8 @@
 #include <RAT/DS/Run.hh>
 using namespace RAT;
 
-//#ifdef __ORCA
 #include <ORFileReader.hh>
 #include <ORSocketReader.hh>
-//using namespace OrcaRoot;
-//#endif
 
 #include <TTree.h>
 #include <TFile.h>
@@ -16,6 +13,7 @@ using namespace ROOT;
 #include <iostream>
 using namespace std;
 
+#include <Viewer/LoadRootFileThread.hh>
 #include <Viewer/LoadOrcaFileThread.hh>
 #include <Viewer/DataStore.hh>
 #include <Viewer/Semaphore.hh>
@@ -24,47 +22,68 @@ using namespace Viewer;
 void
 LoadOrcaFileThread::Run()
 {
-#ifdef _ORCA_
   DataStore& events = DataStore::GetInstance();
 
-  if( fFile == NULL )
+  if( fTree == NULL )
     {
       LoadRootFile();
-      fFile = new ORFileReader;
-      ((ORFileReader*) fFile)->AddFileToProcess(fFileName);
-
-      LoadNextEvent();
       events.SetRun( fRun );
+      fTree->GetEntry( fMCEvent );
+      events.Add( fDS );
       fSemaphore.Signal();
       fMCEvent++;
       return;
     }
-  bool success = LoadNextEvent();
-  fMCEvent++;
-  cout << "Loaded " << fMCEvent << " events." << endl;  
-  if( !success )
+  if( fMCEvent >= fTree->GetEntries() )
     {
+      fFile->Close();
       delete fFile;
-      fRootFile->Close();
-      delete fRootFile;
+      delete fDS;
       delete fRun;
+
       Kill();
     }
-#else
-  Kill();
-#endif
+
+  else
+    {
+      cout << "Should probably open something" << endl;
+    }
 }
 
-bool
-LoadOrcaFileThread::LoadNextEvent()
-{
+
+
+
+//      fFile = new ORFileReader;
+//     ((ORFileReader*) fFile)->AddFileToProcess(fFileName);
+//      LoadNextEvent();
+//      events.SetRun( fRun );
+//      fSemaphore.Signal();
+//      fMCEvent++;
+//      return;
+//    }
+//  bool success = LoadNextEvent();
+//  fMCEvent++;
+//  cout << "Loaded " << fMCEvent << " events." << endl;  
+//  if( !success )
+//    {
+//      delete fFile;
+//      fRootFile->Close();
+//      delete fRootFile;
+//      delete fRun;
+//     Kill();
+//    }
+//}
+
+//bool
+//LoadOrcaFileThread::LoadNextEvent()
+//{
 //#ifdef __ORCA
-  if(fFile->OKToRead()) {
-    std::cout << "OK to read!" <<std::endl;
-  }
-  else {
-    std::cout <<"Not OK to read :(" << std::endl;
-  }
+//  if(fFile->OKToRead()) {
+//    std::cout << "OK to read!" <<std::endl;
+//  }
+//  else {
+//    std::cout <<"Not OK to read :(" << std::endl;
+//  }
 /*  try
     {
       TObject* record = fFile->next();
@@ -86,17 +105,20 @@ LoadOrcaFileThread::LoadNextEvent()
       return LoadNextEvent(); // Carry on and try again...
     }*/
 //#endif
-}
+//}
 
 void
 LoadOrcaFileThread::LoadRootFile()
 {
-  stringstream fileLocation;
-  fileLocation << getenv( "VIEWERROOT" ) << "/Temp.root";
-  fRootFile = new TFile( fileLocation.str().c_str(), "READ" );
- 
-  fRunTree = (TTree*)fRootFile->Get( "runT" ); 
+  fFile = new TFile( fFileName.c_str(), "READ" );
+
+  fTree = (TTree*)fFile->Get( "T" );
+  fDS = new RAT::DS::Root();
+  fTree->SetBranchAddress( "ds", &fDS );
+
+  fRunTree = (TTree*)fFile->Get( "runT" );
   fRun = new RAT::DS::Run();
   fRunTree->SetBranchAddress( "run", &fRun );
   fRunTree->GetEntry();
 }
+
