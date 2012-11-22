@@ -5,6 +5,7 @@ using namespace RAT;
 #include <ORFileReader.hh>
 #include <ORSocketReader.hh>
 #include <ORDataProcManager.hh>
+#include "ORViewerProcessor.h"
 
 #include <TTree.h>
 #include <TFile.h>
@@ -61,6 +62,8 @@ LoadOrcaFileThread::LoadNextEvent()
   if(fOrcaFile->OKToRead()) {
     std::cout << "OK to read!" <<std::endl;
     ORDataProcManager dataProcManager(fOrcaFile);
+    ORViewerProcessor orcaViewer;
+//    orcaViewer.SetReader(this);
     dataProcManager.AddProcessor(&orcaViewer);
     dataProcManager.ProcessDataStream();
   }
