@@ -50,6 +50,7 @@ public:
 private:
   void LoadRootFile();
   void LoadOrcaFile();
+  bool LoadNextEvent();
 
   std::string fFileName;
   
@@ -71,11 +72,14 @@ private:
 LoadOrcaFileThread::LoadOrcaFileThread( const std::string& fileName, Semaphore& semaphore )
   : fSemaphore( semaphore ), fFileName( fileName )
 { 
+  fTree = NULL;
+  fDS = NULL;
   fFile = NULL; 
   fRootFile = NULL;
   fRun = NULL; 
   fMCEvent = 0; 
 } 
+
 
 } //::Viewer
 

@@ -4,6 +4,7 @@ using namespace RAT;
 
 #include <ORFileReader.hh>
 #include <ORSocketReader.hh>
+#include <ORDataProcManager.hh>
 
 #include <TTree.h>
 #include <TFile.h>
@@ -29,6 +30,10 @@ LoadOrcaFileThread::Run()
       LoadRootFile();
       events.SetRun( fRun );
       fTree->GetEntry( fMCEvent );
+
+      fOrcaFile = new ORFileReader;
+     ((ORFileReader*) fOrcaFile)->AddFileToProcess(fFileName);
+
       events.Add( fDS );
       fSemaphore.Signal();
       fMCEvent++;
@@ -46,8 +51,23 @@ LoadOrcaFileThread::Run()
 
   else
     {
-      cout << "Should probably open something" << endl;
+       LoadNextEvent();
     }
+}
+
+bool
+LoadOrcaFileThread::LoadNextEvent()
+{
+  if(fOrcaFile->OKToRead()) {
+    std::cout << "OK to read!" <<std::endl;
+    ORDataProcManager dataProcManager(fOrcaFile);
+    dataProcManager.AddProcessor(&orcaViewer);
+    dataProcManager.ProcessDataStream();
+  }
+  else {
+    std::cout <<"Not OK to read :(" << std::endl;
+  }
+
 }
 
 
@@ -110,7 +130,7 @@ LoadOrcaFileThread::Run()
 void
 LoadOrcaFileThread::LoadRootFile()
 {
-  fFile = new TFile( fFileName.c_str(), "READ" );
+  fFile = new TFile( "/home/mschwen/Temp.root", "READ" );
 
   fTree = (TTree*)fFile->Get( "T" );
   fDS = new RAT::DS::Root();

@@ -44,6 +44,8 @@ env.Append( CPPPATH = "/home/sstream/OrcaRoot/IO" )
 env.Append( CPPPATH = "/home/sstream/OrcaRoot/Processors" )
 env.Append( CPPPATH = "/home/sstream/OrcaRoot/Decoders" )
 env.Append( CPPPATH = "/home/sstream/OrcaRoot/Util" )
+env.Append( CPPPATH = "/home/sstream/OrcaRoot/Management" )
+
 
 # Creates SNOGoggles Library
 # Can be used by RAT to create a RAT processor version of SNOGoggles
