@@ -38,6 +38,11 @@ namespace RIDS
 class EV
 {
 public:
+  EV( UInt_t* iMtcRecord , 
+        std::vector<double> fViewerData1,
+        std::vector<double> fViewerData2,
+        std::vector<double> fViewerData3,
+        std::vector<double> fViewerData4); 
   EV( RAT::DS::EV& rEV );
   ~EV();
 

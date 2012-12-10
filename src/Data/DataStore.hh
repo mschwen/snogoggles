@@ -24,6 +24,7 @@
 #define __Viewer_DataStore__
 
 #include <vector>
+#include <Rtypes.h>
 
 #include <Viewer/InputBuffer.hh>
 #include <Viewer/RIDS/RIDS.hh>
@@ -57,6 +58,9 @@ public:
   void SetRun( RAT::DS::Run* rRun );
   /// Add a DS event to the structure (data thread only)
   bool Add( RAT::DS::Root* rDS );
+  bool Add( RIDS::Event* riDS );
+  bool Add( UInt_t* aMtcRecord , std::vector<double> fViewerData1,  std::vector<double> fViewerData2,  std::vector<double> fViewerData3,  std::vector<double> fViewerData4);
+
   /// Move to the latest event
   void Latest();
   /// Move to the next event, rolls over

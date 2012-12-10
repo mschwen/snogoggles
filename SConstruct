@@ -27,10 +27,15 @@ viewer_obj += src_module( env, "Data/RIDS", True )
 ROOTSYS = os.path.join(os.environ["ROOTSYS"], 'bin')
 ROOTARCH = os.popen(os.path.join(ROOTSYS, 'root-config') + ' --arch').read().strip()
 
+
 # Adds all packages used by the viewer
-# Add zdab by default unless zdab=0 is specified.                                                                                             
+# Add zdab by default unless zdab=0 is specified.                             
+# Same for orca
+
+orca = int(ARGUMENTS.get('orca', 0)) == 1
 zdab = int(ARGUMENTS.get('zdab', 1)) == 1
-addpackages(env, zdab)
+addpackages(env, zdab, orca)
+
 
 # Temp always in debug
 env.Append(CXXFLAGS=["-g"])

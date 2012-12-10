@@ -8,6 +8,18 @@ using namespace std;
 #include <Viewer/RIDS/MC.hh>
 using namespace Viewer::RIDS;
 
+Event::Event(UInt_t* iMtcRecord  , std::vector<double> fViewerData1,  std::vector<double> fViewerData2,  std::vector<double> fViewerData3,  std::vector<double> fViewerData4)
+{
+  fMC = NULL;
+  fEV = NULL;
+  fEV = new EV( iMtcRecord , fViewerData1,  fViewerData2,  fViewerData3,  fViewerData4 );
+  fRunID = 23;
+  fSubRunID = 1;
+  time_t now = time(0);
+  struct tm* tm = localtime( &now );
+  fTime = Time( tm );
+}
+
 Event::Event( RAT::DS::Root& rDS,
               unsigned int iEV )
 {

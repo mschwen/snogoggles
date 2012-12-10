@@ -44,6 +44,11 @@ namespace RIDS
 class PMTHit
 {
 public:
+  PMTHit( int lcn,
+          double tac,
+          double qhl,
+          double qhs,
+          double qlx );
   PMTHit( double tac,
           double qhl,
           double qhs,

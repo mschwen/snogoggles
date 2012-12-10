@@ -22,7 +22,7 @@
 #include <Viewer/RIDS/RIDS.hh>
 #include <Viewer/RIDS/PMTHit.hh>
 #include <Viewer/RIDS/Time.hh>
-
+#include <Rtypes.h>
 namespace RAT
 {
 namespace DS
@@ -42,8 +42,8 @@ namespace RIDS
 class Event
 {
 public:
-  Event( RAT::DS::Root& rDS,
-         unsigned int iEV );
+  Event( RAT::DS::Root& rDS, unsigned int iEV );
+  Event( UInt_t* iMtcRecord  , std::vector<double> fViewerData1,  std::vector<double> fViewerData2,  std::vector<double> fViewerData3,  std::vector<double> fViewerData4);
   Event( const Event& rhs );
   Event& operator=( const Event& rhs );
   ~Event();

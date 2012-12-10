@@ -11,6 +11,20 @@ using namespace Viewer::RIDS;
 #include <iostream>
 using namespace std;
 
+PMTHit::PMTHit( int lcn,
+                double tac, 
+                double qhl,
+                double qhs,
+                double qlx )
+{
+  fLCN = lcn;
+  fTAC = tac;
+  fQHL = qhl;
+  fQHS = qhs;
+  fQLX = qlx;
+}
+
+
 PMTHit::PMTHit( double tac, 
                 double qhl,
                 double qhs,
@@ -22,6 +36,7 @@ PMTHit::PMTHit( double tac,
   fQHS = qhs;
   fQLX = qlx;
 }
+
 
 PMTHit::PMTHit( RAT::DS::PMTCal* rPMTCal )
 {

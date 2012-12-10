@@ -18,6 +18,8 @@ using namespace std;
 #include <Viewer/LoadRootFileThread.hh>
 #include <Viewer/LoadOrcaFileThread.hh>
 #include <Viewer/DataStore.hh>
+#include <Viewer/Event.hh>
+#include <Viewer/DataStore.hh>
 #include <Viewer/Semaphore.hh>
 using namespace Viewer;
 
@@ -28,13 +30,13 @@ LoadOrcaFileThread::Run()
 
   if( fTree == NULL )
     {
+     ORLogger::SetSeverity(ORLogger::kDebug);
+     fOrcaFile = new ORFileReader;
+     ((ORFileReader*) fOrcaFile)->AddFileToProcess(fFileName);
+
       LoadRootFile();
       events.SetRun( fRun );
       fTree->GetEntry( fMCEvent );
-
-      fOrcaFile = new ORFileReader;
-     ((ORFileReader*) fOrcaFile)->AddFileToProcess(fFileName);
-
       events.Add( fDS );
       fSemaphore.Signal();
       fMCEvent++;
@@ -52,14 +54,13 @@ LoadOrcaFileThread::Run()
 
   else
     {
-       LoadNextEvent();
-    }
-}
-
-bool
-LoadOrcaFileThread::LoadNextEvent()
-{
   if(fOrcaFile->OKToRead()) {
+//          RAT::DS::Root* ds = new RAT::DS::Root( *reinterpret_cast<RAT::DS::Root*>( record ) );
+//          DataStore& events = DataStore::GetInstance();
+//          RIDS::Event* rids = new RIDS::Event();
+//          events.Add( rids );
+//          delete rids;
+
     std::cout << "OK to read!" <<std::endl;
     ORDataProcManager dataProcManager(fOrcaFile);
     ORViewerProcessor orcaViewer;
@@ -70,6 +71,14 @@ LoadOrcaFileThread::LoadNextEvent()
   else {
     std::cout <<"Not OK to read :(" << std::endl;
   }
+
+    }
+}
+
+bool
+LoadOrcaFileThread::LoadNextEvent()
+{
+
 
 }
 
@@ -143,5 +152,17 @@ LoadOrcaFileThread::LoadRootFile()
   fRun = new RAT::DS::Run();
   fRunTree->SetBranchAddress( "run", &fRun );
   fRunTree->GetEntry();
+
+//  if(fOrcaFile->OKToRead()) {
+//    std::cout << "OK to read!" <<std::endl;
+//    ORDataProcManager dataProcManager(fOrcaFile);
+//    ORViewerProcessor orcaViewer;
+//    orcaViewer.SetReader(this);
+//    dataProcManager.AddProcessor(&orcaViewer);
+//    dataProcManager.ProcessDataStream();
+//  }
+//  else {
+//    std::cout <<"Not OK to read :(" << std::endl;
+//  }
 }
 

@@ -85,7 +85,7 @@ int main( int argc, char *argv[] )
       Semaphore sema;
       if( options.fArgument.substr( options.fArgument.size() - 4 ) == string( "root" ) )
         loadData = new LoadRootFileThread( options.fArgument, sema );
-      else if ( options.fArgument.substr( options.fArgument.size() - 4 ) == string( "4882" ) )
+      else if ( options.fArgument.substr( 0,3 ) == string( "Run" ) )
         loadData = new LoadOrcaFileThread( options.fArgument, sema );
       else
         {
@@ -143,8 +143,13 @@ ParseArguments( int argc, char** argv )
         case 'h': PrintHelp(); exit(0); break;
         case 'o': 
           {
+            if ( optarg == NULL )
+            {
+              PrintHelp();
+              exit(1);
+            }
             options.fStream = false;
-            options.fArgument = "Run4882";    
+            options.fArgument = optarg;    
           }      
         break;
         case 's': 

@@ -6,6 +6,21 @@ using namespace std;
 #include <Viewer/RIDS/EV.hh>
 using namespace Viewer::RIDS;
 
+EV::EV( UInt_t* iMtcRecord , 
+        std::vector<double> fViewerData1,
+        std::vector<double> fViewerData2,
+        std::vector<double> fViewerData3,
+        std::vector<double> fViewerData4) 
+{
+  fClock50 = 23;
+  fTriggerWord = 21;
+  for( unsigned int ihit = 0; ihit < fViewerData1.size(); ihit++) 
+  {
+    fTruthHits.push_back(PMTHit(ihit,(double)fViewerData1[ihit],(double)fViewerData2[ihit],(double)fViewerData3[ihit],(double)fViewerData4[ihit]));
+//    fTruthHits.push_back(PMTHit(0,0,0,0));
+  }
+}
+
 EV::EV( RAT::DS::EV& rEV )
 {
   fClock50 = rEV.GetClockCount50();

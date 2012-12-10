@@ -55,6 +55,14 @@ def glut(env):
 def PThread(env):
     env.Append( LIBS = [ "pthread" ] )
 
+#Append the OrcaRoot Raw data converter
+def OrcaRoot(env):
+    orcaroot_path = os.path.join(os.environ['ORDIR'], "")
+    env.Append(CPPPATH = [os.path.join(orcaroot_path, "")])
+    env.Append(LIBPATH = [os.path.join(orcaroot_path, "lib")])
+    env.Append(LIBPATH = ["/home/mschwen/snoing/install/snogoggles-dev/src/Thread/"])
+    env.Append(LIBS = ["ORDecoders", "ORIO", "ORManagement", "ORProcessors", "ORUtil", "ORViewerProcessor"])
+
 # Append the rattools zdab convertor
 def ratzdab(env):
     ratzdab_path = os.path.join(os.environ['RATTOOLS'], "ratzdab")
@@ -85,7 +93,7 @@ def Python(env):
     env.MergeFlags( ' '.join( ldflags ) ) 
     
 # Adds all packages
-def addpackages(env, zdab):
+def addpackages(env, zdab, orca):
     rat(env)
     glut(env)    
     geant4(env)
@@ -94,6 +102,8 @@ def addpackages(env, zdab):
     Python(env)
     xercesc(env)
     PThread(env)
+    if orca: 
+        OrcaRoot(env)
     if zdab:
         ratzdab(env)
     #Avalanche(env)

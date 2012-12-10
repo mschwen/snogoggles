@@ -80,6 +80,27 @@ DataStore::Add( RAT::DS::Root* rDS )
   return true;
 }
 
+bool
+DataStore::Add( UInt_t* aMtcRecord ,  std::vector<double> fViewerData1,  std::vector<double> fViewerData2,  std::vector<double> fViewerData3,  std::vector<double> fViewerData4)
+{
+  RIDS::Event* event = new RIDS::Event( aMtcRecord ,  fViewerData1,  fViewerData2,  fViewerData3,  fViewerData4);
+  bool added = fInputBuffer.Push( event );
+  if( !added )
+    return false;
+  return true;
+}
+
+bool
+DataStore::Add( RIDS::Event* riDS )
+{
+//  RIDS::Event* event = new RIDS::Event( *riDS );  
+  bool added = fInputBuffer.Push( riDS );
+  if( !added )
+    return false;
+  return true;
+}
+
+
 void
 DataStore::Update()
 {
