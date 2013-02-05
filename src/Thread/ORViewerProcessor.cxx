@@ -2,10 +2,10 @@
 
 #include "ORViewerProcessor.h"
 #include "LoadOrcaFileThread.hh"
-#include "PZdabFile.h"
+//#include "PZdabFile.h"
 #include "ORRunContext.hh"
 #include "ORLogger.hh"
-#include "CUtils.h"
+//#include "CUtils.h"
 //#include "builder.h"
 #include <netinet/in.h>
 #include <unistd.h>
@@ -17,6 +17,13 @@ using namespace std;
 
 #define GT_MASK     0xffffff            // GTID's are 24 bits
 #define GT(a)       (*(a+3) & GT_MASK)
+
+#define FEC_GT_16(a) (UInt_t)((a)&0x0000FFFF)
+#define FEC_CR(a)   (UInt_t)(((a)&0x03e00000)>>21)    
+#define FEC_SL(a)   (UInt_t)(((a)&0x3C000000)>>26)
+#define FEC_CH(a)   (UInt_t)(((a)&0x001F0000)>>16) 
+
+#define FEC_LCN(a)  (  512 * FEC_CR(a) + 32 * FEC_SL(a) + FEC_CH(a)    )
 
 ORViewerProcessor::ORViewerProcessor(std::string /*label*/)
     : fRunStart(0)
@@ -49,18 +56,19 @@ ORViewerProcessor::~ORViewerProcessor()
 ORDataProcessor::EReturnCode ORViewerProcessor::StartRun()
 {
 //    SNO_printf(5, ORCA_FAC, "Got StartRun() signal! (run %ld)\n",(long)GetRunContext()->GetRunNumber());
-    cout << "Get Runstart Signal" << endl;
+    cout << "Got Runstart Signal"  << endl;
 
     fMTCDataId = fMTCProcessor->GetDataId();
-	fPMTDataId = fPMTProcessor->GetDataId();
-	fCaenDataId = fCaenProcessor->GetDataId();
+    fPMTDataId = fPMTProcessor->GetDataId();
+    fCaenDataId = fCaenProcessor->GetDataId();
     fRunId = fRunProcessor->GetDataId();
 
-      fViewerData4.resize(10240);
-      fViewerData3.resize(10240);
-      fViewerData2.resize(10240);
-      fViewerData1.resize(10240);
-
+      fViewerData4.resize(10752);
+      fViewerData3.resize(10752);
+      fViewerData2.resize(10752);
+      fViewerData1.resize(10752);
+   
+      fViewerClock = clock();
 
     if (0x0000ABCD == htonl(0x0000ABCD)) fMustSwap = kFALSE;
     else fMustSwap = kTRUE;
@@ -80,27 +88,131 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
 {
   unsigned int thisDataId = fMTCDecoder.DataIdOf(record); // any long decoder would do 
 
+
+
   if (thisDataId == fMTCDataId) 
     {
 
-      cout << "MTC GTID: " << (UInt_t)(record[4]&0x00FFFFFF)  <<  endl;
-      cout << "NHIT 100: " << (UInt_t)(record[4] &  0x07000000) << endl;
-      cout << "NHIT 20: " << (UInt_t)(record[4] &  0x18000000) << endl;
-      cout << "ESUM: "    << (UInt_t)(record[4] & 0x60000000) << endl;
+  if(clock() > fViewerClock+0.2*CLOCKS_PER_SEC) {
+      Viewer::DataStore::GetInstance().Add( record , fViewerData1, fViewerData2, fViewerData3, fViewerData4 );
+
+      for(int chn = 0; chn<32; chn++) {
+        fViewerData3[512*19+0*32+chn] = fViewerData3[512*20+0*32+(fViewerEventNum +chn)%32]; 
+        fViewerData3[512*19+1*32+chn] = fViewerData3[512*20+1*32+(fViewerEventNum +chn)%32]; 
+        fViewerData3[512*19+2*32+chn] = fViewerData3[512*20+2*32+(fViewerEventNum +chn)%32]; 
+        fViewerData3[512*19+3*32+chn] = fViewerData3[512*20+3*32+(fViewerEventNum +chn)%32]; 
+        fViewerData3[512*19+4*32+chn] = fViewerData3[512*20+4*32+(fViewerEventNum +chn)%32]; 
+        fViewerData3[512*19+5*32+chn] = fViewerData3[512*20+5*32+(fViewerEventNum +chn)%32]; 
+
+/*
+        fViewerData3[512*20+0*32+(fViewerEventNum +chn)%32]=0;
+        fViewerData3[512*20+1*32+(fViewerEventNum +chn)%32]=0;
+        fViewerData3[512*20+2*32+(fViewerEventNum +chn)%32]=0;
+        fViewerData3[512*20+3*32+(fViewerEventNum +chn)%32]=0;
+        fViewerData3[512*20+4*32+(fViewerEventNum +chn)%32]=0;
+        fViewerData1.clear(); 
+        fViewerData2.clear(); 
+        fViewerData3.clear(); 
+        fViewerData4.clear(); 
+*/
+      //  fViewerData3.clear(); 
+      //fViewerData3.resize(10752);
+
+      }
 
 
 
-       fViewerData3[512*19+0*32+((UInt_t)(record[4]&0x00FFFFFF) )%32] = 300*(bool)(record[4] &  0x07000000); 
-       fViewerData3[512*19+1*32+((UInt_t)(record[4]&0x00FFFFFF) )%32] =  300*(bool)(record[4] &  0x18000000); 
-       fViewerData3[512*19+2*32+((UInt_t)(record[4]&0x00FFFFFF) )%32] = 300*(bool)(record[4] &  0x60000000); 
+      fViewerEventNum++;
+      fViewerClock = clock();
+
+  }
+
+
+     // cout << "MTC GTID: " << (UInt_t)(record[4]&0x00FFFFFF)  <<  endl;
+     // cout << "NHIT 100: " << (UInt_t)(record[4] &  0x07000000) << endl;
+     // cout << "NHIT 20: " << (UInt_t)(record[4] &  0x18000000) << endl;
+     // cout << "ESUM: "    << (UInt_t)(record[4] & 0x60000000) << endl;
+
+       fViewerData2[512*19+(fViewerEventNum )%32] = (double) (((UInt_t)(record[4]&0x00FFFFFF) % 800));
+
+
+       fViewerData3[512*20+0*32+(fViewerEventNum )%32]++ ;
+       fViewerData3[512*20+1*32+(fViewerEventNum )%32] = (double)((UInt_t)(record[4]&0x00FFFFFF));
+//       cout << (double)((UInt_t)(record[4]&0x00FFFFFF)) << endl;
+       fViewerData3[512*20+2*32+(fViewerEventNum )%32] += (bool)(record[4] &  0x07000000); 
+       fViewerData3[512*20+3*32+(fViewerEventNum )%32] +=  (bool)(record[4] &  0x18000000); 
+       fViewerData3[512*20+4*32+(fViewerEventNum )%32] += (bool)(record[4] &  0x60000000); 
+       fViewerData3[512*20+5*32+(fViewerEventNum )%32] += 1000*(bool)(record[5] &  0x02000000); 
 
        fViewerData4[512*19+(((UInt_t)(record[4]&0x00FFFFFF) )%512)] = (double) (((UInt_t)(record[4]&0x00FFFFFF) % 800));
 
-      Viewer::DataStore::GetInstance().Add( record , fViewerData1, fViewerData2, fViewerData3, fViewerData4 );
-
     }
+  else if (thisDataId == fPMTDataId) 
+    {
+
+      // cout << "Got PMT data record of length " << fPMTDecoder.LengthOf(record) << endl;
+
+      int recnum=1;//Words 0&1 are from ORCA
+
+        //Megabundle header W1:
+        recnum++;
+        ORUtils::Swap(record[recnum]); 
+        // cout << "Megabundle payload from crate " << (UInt_t)((record[recnum]&0x1F000000)>>24) << " of length " << (UInt_t)(record[recnum]&0x00FFFFFF) << endl;
+        // cout << "Mega Header W1: " <<  bitset<32>(record[recnum]) << endl;
+        //Megabundle header W2:
+        recnum++;
+        ORUtils::Swap(record[recnum]); 
+        // cout << "Passmin counter:" << bitset<32>(record[recnum]) << endl;
+        //Megabundle header W3:
+        recnum++;
+        ORUtils::Swap(record[recnum]); 
+        // cout << "XL3 Clock: " <<  bitset<32>(record[recnum]) << endl;
+      
+        while(recnum < fPMTDecoder.LengthOf(record)-1) 
+        {
+          //Minibundle Header:
+          recnum++;
+          ORUtils::Swap(record[recnum]);
+          // cout << "Minibundle payload from card " << (UInt_t)((record[recnum]&0xF000000)>>24) << " of length " << (UInt_t)(record[recnum]&0x00FFFFFF) << endl;
+          // cout << "Mini Header: " <<  bitset<32>(record[recnum]) << endl;
+          //Passmin Minibundle:
+          if((UInt_t)(record[recnum]&0x80000000)) 
+          { 
+            recnum++;
+            ORUtils::Swap(record[recnum]);
+            // cout << "Passmin Minibundle:" <<  bitset<32>(record[recnum]) << endl;
+          }
+          else 
+          {
+            //PMT bundles
+            for(int ministop = recnum + (UInt_t)(record[recnum]&0x00FFFFFF); recnum<ministop; )
+            {
+              //PMT W1:
+              recnum++;
+              ORUtils::Swap(record[recnum]);
+              // cout << "PMT W1: " <<  bitset<32>(record[recnum]) << endl;
+              // cout << "PMT Slot: " << FEC_SL(record[recnum]) << endl;
+              //PMT W2:
+              recnum++;
+              ORUtils::Swap(record[recnum]);
+              // cout << "PMT W2: " <<  bitset<32>(record[recnum]) << endl;
+              //PMT W3:
+              recnum++;
+              ORUtils::Swap(record[recnum]);
+              // cout << "PMT W3: " <<  bitset<32>(record[recnum]) << endl;
+              //}
+              fViewerData3[(int)FEC_LCN(record[recnum-2])] = FEC_GT_16(record[recnum-2]); 
+              fViewerData2[(int)FEC_LCN(record[recnum-2])]++;
+            }
+         
+       }
+     } 
+  }
 return kSuccess;
 }
+
+
+
 /*
 	unsigned int thisDataId = fMTCDecoder.DataIdOf(record); // any long decoder would do the job
           cout <<"got a data record" << endl;

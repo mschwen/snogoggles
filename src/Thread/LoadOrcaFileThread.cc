@@ -30,7 +30,7 @@ LoadOrcaFileThread::Run()
 
   if( fTree == NULL )
     {
-     ORLogger::SetSeverity(ORLogger::kDebug);
+//     ORLogger::SetSeverity(ORLogger::kDebug);
      fOrcaFile = new ORFileReader;
      ((ORFileReader*) fOrcaFile)->AddFileToProcess(fFileName);
 

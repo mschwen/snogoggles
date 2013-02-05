@@ -9,6 +9,7 @@
 #include "ORRunDecoder.hh"
 #include "ORCaen1720Decoder.hh"
 
+#include <time.h>
 #include <map>
 #include <string>
 
@@ -24,6 +25,10 @@ class ORViewerProcessor : public ORCompoundDataProcessor
     virtual EReturnCode EndRun();
 
     void SetReader(OrcaReader *reader) { fReader = reader; }
+
+    UInt_t fViewerEventNum;
+    clock_t fViewerClock; 
+
     std::vector<double> fViewerData1;
     std::vector<double> fViewerData2;
     std::vector<double> fViewerData3;
