@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <bitset>
 #include "iostream"
+#include "math.h"
 
 #include <Viewer/DataStore.hh>
 using namespace std;
@@ -132,10 +133,16 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
 
        for(int p=0;p<9727;p++) {
          if(fViewerTruthData1[p]) {
+          //normalize data by hit count, etc
+          fViewerCalData2[p] = log(fViewerTruthData2[p])*200;
+          fViewerCalData4[p] = log(fViewerTruthData3[p])*50;
+
+
           fViewerTruthData1[p]=fViewerTruthData1[p]/fViewerUncalData1[p];
           fViewerTruthData2[p]=fViewerTruthData2[p]/fViewerUncalData1[p];
           fViewerTruthData3[p]=fViewerTruthData3[p]/fViewerUncalData1[p];
           fViewerTruthData4[p]=fViewerTruthData4[p]/fViewerUncalData1[p];
+
          }
        }
 
@@ -271,7 +278,7 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
 
      fGTCount++; 
 //      cout << "MTC GTID#: " << bitset<32>((UInt_t)(record[4]&0x00FFFFFF))  <<  endl;
-      cout << "MTC GTID: " << (UInt_t)MTC_GTID(record) << endl;
+      //cout << "MTC GTID: " << (UInt_t)MTC_GTID(record) << endl;
      // cout << "NHIT 100: " << (UInt_t)(record[4] &  0x07000000) << endl;
      // cout << "NHIT 20: " << (UInt_t)(record[4] &  0x18000000) << endl;
      // cout << "NHIT 20#: " << MTC_N20(record) << endl;
@@ -415,10 +422,10 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
 
                 fViewerUncalData1[(int)FEC_LCN(record[recnum-2])]++;
                 fViewerUncalData2[(int)FEC_LCN(record[recnum-2])] = (double) ((FEC_GTID(&record[recnum-2]))%4096 );
-                //cout << "PMTGTID: " << FEC_GTID(&record[recnum-2])  << "/" <<  fViewerUncalData2[(int)FEC_LCN(record[recnum-2])] << "/" << (FEC_GTID(&record[recnum-2]))%4096<< endl;
                 fViewerUncalData3[(int)FEC_LCN(record[recnum-2])] = (double)((FEC_GTID(&record[recnum-2])-fViewerLastMtcGtid)+500);
 
                 fViewerUncalData4[(int)FEC_LCN(record[recnum-2])] += FEC_SYN(record[recnum-2]);
+               //cout << "PMTGTID: " << FEC_GTID(&record[recnum-2]) << endl;
 
 
 
@@ -427,7 +434,12 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
                 fViewerTruthData3[(int)FEC_LCN(record[recnum-2])] += FEC_QHS(&record[recnum-2]);
                 fViewerTruthData4[(int)FEC_LCN(record[recnum-2])] += FEC_QLX(&record[recnum-2]);
 
-
+                if(fViewerCalData1[(int)FEC_LCN(record[recnum-2])] == 0) {
+                  fViewerCalData1[(int)FEC_LCN(record[recnum-2])] = FEC_TAC(&(record[recnum-2]))/8;
+                }
+                else {
+                                    fViewerCalData1[(int)FEC_LCN(record[recnum-2])] = max((UInt_t)fViewerCalData1[(int)FEC_LCN(record[recnum-2])],FEC_TAC(&(record[recnum-2]))/8);
+                     }
             }
          
        }
@@ -451,7 +463,7 @@ else if (thisDataId == 1572864) {
  
 else 
 {
-  cout << "Received data with ID = " << thisDataId << " of length " << fPMTDecoder.LengthOf(record) << endl;
+//  cout << "Received data with ID = " << thisDataId << " of length " << fPMTDecoder.LengthOf(record) << endl;
 }
 
 return kSuccess;
