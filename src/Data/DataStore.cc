@@ -81,9 +81,31 @@ DataStore::Add( RAT::DS::Root* rDS )
 }
 
 bool
-DataStore::Add( UInt_t* aMtcRecord ,  std::vector<double> fViewerData1,  std::vector<double> fViewerData2,  std::vector<double> fViewerData3,  std::vector<double> fViewerData4)
+DataStore::Add(std::vector<double> fViewerTruthData1,
+             std::vector<double> fViewerTruthData2,
+             std::vector<double> fViewerTruthData3,
+             std::vector<double> fViewerTruthData4,
+             std::vector<double> fViewerCalData1,
+             std::vector<double> fViewerCalData2,
+             std::vector<double> fViewerCalData3,
+             std::vector<double> fViewerCalData4,
+             std::vector<double> fViewerUncalData1,
+             std::vector<double> fViewerUncalData2,
+             std::vector<double> fViewerUncalData3,
+             std::vector<double> fViewerUncalData4 )
 {
-  RIDS::Event* event = new RIDS::Event( aMtcRecord ,  fViewerData1,  fViewerData2,  fViewerData3,  fViewerData4);
+  RIDS::Event* event = new RIDS::Event(fViewerTruthData1,
+               fViewerTruthData2,
+               fViewerTruthData3,
+               fViewerTruthData4,
+               fViewerCalData1,
+               fViewerCalData2,
+               fViewerCalData3,
+               fViewerCalData4,
+               fViewerUncalData1,
+               fViewerUncalData2,
+               fViewerUncalData3,
+               fViewerUncalData4 );
   bool added = fInputBuffer.Push( event );
   if( !added )
     return false;

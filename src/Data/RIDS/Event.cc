@@ -8,11 +8,33 @@ using namespace std;
 #include <Viewer/RIDS/MC.hh>
 using namespace Viewer::RIDS;
 
-Event::Event(UInt_t* iMtcRecord  , std::vector<double> fViewerData1,  std::vector<double> fViewerData2,  std::vector<double> fViewerData3,  std::vector<double> fViewerData4)
+Event::Event(std::vector<double> fViewerTruthData1,
+             std::vector<double> fViewerTruthData2,
+             std::vector<double> fViewerTruthData3,
+             std::vector<double> fViewerTruthData4,
+             std::vector<double> fViewerCalData1,
+             std::vector<double> fViewerCalData2,
+             std::vector<double> fViewerCalData3,
+             std::vector<double> fViewerCalData4,
+             std::vector<double> fViewerUncalData1,
+             std::vector<double> fViewerUncalData2,
+             std::vector<double> fViewerUncalData3,
+             std::vector<double> fViewerUncalData4)
 {
   fMC = NULL;
   fEV = NULL;
-  fEV = new EV( iMtcRecord , fViewerData1,  fViewerData2,  fViewerData3,  fViewerData4 );
+  fEV = new EV(fViewerTruthData1,
+               fViewerTruthData2,
+               fViewerTruthData3,
+               fViewerTruthData4,
+               fViewerCalData1,
+               fViewerCalData2,
+               fViewerCalData3,
+               fViewerCalData4,
+               fViewerUncalData1,
+               fViewerUncalData2,
+               fViewerUncalData3,
+               fViewerUncalData4);
   fRunID = 23;
   fSubRunID = 1;
   time_t now = time(0);

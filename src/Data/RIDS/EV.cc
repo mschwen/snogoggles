@@ -6,18 +6,35 @@ using namespace std;
 #include <Viewer/RIDS/EV.hh>
 using namespace Viewer::RIDS;
 
-EV::EV( UInt_t* iMtcRecord , 
-        std::vector<double> fViewerData1,
-        std::vector<double> fViewerData2,
-        std::vector<double> fViewerData3,
-        std::vector<double> fViewerData4) 
+EV::EV( std::vector<double> fViewerTruthData1,
+        std::vector<double> fViewerTruthData2,
+        std::vector<double> fViewerTruthData3,
+        std::vector<double> fViewerTruthData4,
+        std::vector<double> fViewerCalData1,
+        std::vector<double> fViewerCalData2,
+        std::vector<double> fViewerCalData3,
+        std::vector<double> fViewerCalData4,
+        std::vector<double> fViewerUncalData1,
+        std::vector<double> fViewerUncalData2,
+        std::vector<double> fViewerUncalData3,
+        std::vector<double> fViewerUncalData4) 
 {
   fClock50 = 23;
   fTriggerWord = 21;
-  for( unsigned int ihit = 0; ihit < fViewerData1.size(); ihit++) 
+  for( unsigned int ihit = 0; ihit < fViewerTruthData1.size(); ihit++) 
   {
-    fTruthHits.push_back(PMTHit(ihit,(double)fViewerData1[ihit],(double)fViewerData2[ihit],(double)fViewerData3[ihit],(double)fViewerData4[ihit]));
-//    fTruthHits.push_back(PMTHit(0,0,0,0));
+    fTruthHits.push_back(PMTHit(ihit,(double)fViewerTruthData1[ihit],
+       (double)fViewerTruthData2[ihit],
+       (double)fViewerTruthData3[ihit],
+       (double)fViewerTruthData4[ihit]));
+    fCalHits.push_back(PMTHit(ihit,(double)fViewerCalData1[ihit]%4096,
+       (double)fViewerCalData2[ihit],
+       (double)fViewerCalData3[ihit],
+       (double)fViewerCalData4[ihit]));
+    fUnCalHits.push_back(PMTHit(ihit,(double)fViewerUncalData1[ihit],
+       (double)fViewerUncalData2[ihit],
+       (double)fViewerUncalData3[ihit],
+       (double)fViewerUncalData4[ihit]));
   }
 }
 
