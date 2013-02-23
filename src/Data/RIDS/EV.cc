@@ -27,7 +27,7 @@ EV::EV( std::vector<double> fViewerTruthData1,
        (double)fViewerTruthData2[ihit],
        (double)fViewerTruthData3[ihit],
        (double)fViewerTruthData4[ihit]));
-    fCalHits.push_back(PMTHit(ihit,(double)fViewerCalData1[ihit]%4096,
+    fCalHits.push_back(PMTHit(ihit,(double)fViewerCalData1[ihit],
        (double)fViewerCalData2[ihit],
        (double)fViewerCalData3[ihit],
        (double)fViewerCalData4[ihit]));

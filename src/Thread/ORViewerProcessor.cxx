@@ -138,10 +138,10 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
           fViewerCalData4[p] = log(fViewerTruthData3[p])*50;
 
 
-          fViewerTruthData1[p]=fViewerTruthData1[p]/fViewerUncalData1[p];
-          fViewerTruthData2[p]=fViewerTruthData2[p]/fViewerUncalData1[p];
-          fViewerTruthData3[p]=fViewerTruthData3[p]/fViewerUncalData1[p];
-          fViewerTruthData4[p]=fViewerTruthData4[p]/fViewerUncalData1[p];
+          fViewerTruthData1[p]=fViewerTruthData1[p];
+          fViewerTruthData2[p]=fViewerTruthData2[p]*10/fGTCount;
+          fViewerTruthData3[p]=fViewerTruthData3[p]*10/fGTCount;
+          fViewerTruthData4[p]=fViewerTruthData4[p]*10/fGTCount;
 
          }
        }
@@ -425,21 +425,27 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
                 fViewerUncalData3[(int)FEC_LCN(record[recnum-2])] = (double)((FEC_GTID(&record[recnum-2])-fViewerLastMtcGtid)+500);
 
                 fViewerUncalData4[(int)FEC_LCN(record[recnum-2])] += FEC_SYN(record[recnum-2]);
-               //cout << "PMTGTID: " << FEC_GTID(&record[recnum-2]) << endl;
+               cout << "PMTGTID: " << FEC_GTID(&record[recnum-2]) << endl;
 
 
 
-                fViewerTruthData1[(int)FEC_LCN(record[recnum-2])] += FEC_TAC(&(record[recnum-2]))/8;
+              // For AVG TAC: 
+              // fViewerTruthData1[(int)FEC_LCN(record[recnum-2])] += FEC_TAC(&(record[recnum-2]))/8;
+              
+              //For Max TAC (earliest tubes):
+                if(fViewerTruthData1[(int)FEC_LCN(record[recnum-2])] == 0)
+                {
+                  fViewerTruthData1[(int)FEC_LCN(record[recnum-2])] = FEC_TAC(&(record[recnum-2]))/8;
+                }
+                else 
+                {
+                  fViewerTruthData1[(int)FEC_LCN(record[recnum-2])] = max((UInt_t)fViewerTruthData1[(int)FEC_LCN(record[recnum-2])],FEC_TAC(&(record[recnum-2]))/8);
+                }
+
                 fViewerTruthData2[(int)FEC_LCN(record[recnum-2])] += FEC_QHL(&record[recnum-2]);
                 fViewerTruthData3[(int)FEC_LCN(record[recnum-2])] += FEC_QHS(&record[recnum-2]);
                 fViewerTruthData4[(int)FEC_LCN(record[recnum-2])] += FEC_QLX(&record[recnum-2]);
 
-                if(fViewerCalData1[(int)FEC_LCN(record[recnum-2])] == 0) {
-                  fViewerCalData1[(int)FEC_LCN(record[recnum-2])] = FEC_TAC(&(record[recnum-2]))/8;
-                }
-                else {
-                                    fViewerCalData1[(int)FEC_LCN(record[recnum-2])] = max((UInt_t)fViewerCalData1[(int)FEC_LCN(record[recnum-2])],FEC_TAC(&(record[recnum-2]))/8);
-                     }
             }
          
        }
