@@ -202,7 +202,7 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
           fViewerCalData4[p]=0;
           fViewerCalData3[p]=0;
           fViewerCalData2[p]=0;
-          fViewerCalData1[p]=0;
+          //fViewerCalData1[p]=0;
 
           fViewerUncalData4[p]=0;
           //fViewerUncalData3[p]=0;
