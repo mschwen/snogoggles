@@ -61,6 +61,18 @@ EventPanel::EventLoop()
   DataStore& events = DataStore::GetInstance();
   while( !fEvents.empty() )
     {
+  std::vector<std::string> DetectorDataTypes;
+  DetectorDataTypes.push_back("Hit Counts");
+  DetectorDataTypes.push_back("CMOS Rates");
+  DetectorDataTypes.push_back("Base Currents");
+  DetectorDataTypes.push_back("GTID-MTC");
+
+  std::vector<std::string> OtherDataTypes;
+  OtherDataTypes.push_back("FEC FIFOs");
+  OtherDataTypes.push_back("Unused");
+  OtherDataTypes.push_back("Unused");
+  OtherDataTypes.push_back("Unused");
+
       switch( fEvents.front().fguiID )
         {
         case eMultiPrev:
@@ -76,12 +88,27 @@ EventPanel::EventLoop()
           events.Next();
           break;
         case eDataSource: // Source change
+          fRenderState.ChangeState( dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataSource] )->GetEnumState<RIDS::EDataSource>(), 
+                                    dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->GetEnumState<RIDS::EDataType>() );
+          if( fRenderState.GetDataSource() == RIDS::eUnCal ){
+            dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->SetOptions( DetectorDataTypes );
+          }
+          else if (fRenderState.GetDataSource() == RIDS::eCal ){
+            dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->SetOptions( OtherDataTypes );
+          }
+          else
+            dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->SetOptions( RenderState::GetTypeStrings() );
+          break;
         case eDataType: // Type change
           fRenderState.ChangeState( dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataSource] )->GetEnumState<RIDS::EDataSource>(), 
                                     dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->GetEnumState<RIDS::EDataType>() );
           dynamic_cast<GUIs::ScalingBar*>( fGUIs[eScaling] )->Reset();
           if( fRenderState.GetDataSource() == RIDS::eScript )
             dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->SetOptions( PythonScripts::GetInstance().GetAnalysis().GetDataLabels() );
+          else if (fRenderState.GetDataSource() == RIDS::eUnCal) 
+            dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->SetOptions( DetectorDataTypes );
+          else if (fRenderState.GetDataSource() == RIDS::eCal) 
+            dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->SetOptions( OtherDataTypes );
           else
             dynamic_cast<GUIs::RadioSelector*>( fGUIs[eDataType] )->SetOptions( RenderState::GetTypeStrings() );
           break;

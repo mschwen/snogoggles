@@ -31,8 +31,42 @@ LoadOrcaFileThread::Run()
   if( fTree == NULL )
     {
 //     ORLogger::SetSeverity(ORLogger::kDebug);
-     fOrcaFile = new ORFileReader;
-     ((ORFileReader*) fOrcaFile)->AddFileToProcess(fFileName);
+  //   fOrcaFile = new ORFileReader;
+  //   ((ORFileReader*) fOrcaFile)->AddFileToProcess(fFileName);
+    bool keepAliveSocket = true;
+  unsigned int reconnectAttempts = 0; // default reconnect tries for sockets.
+  unsigned int portToListenOn = 0;
+  unsigned int maxConnections = 5; // default connections accepted by server
+  unsigned long timeToSleep = 10; //default sleep time for sockets.
+    
+    string readerArg = fFileName;
+    size_t iColon = readerArg.find(":");
+    if (iColon == string::npos) {
+      fOrcaFile = new ORFileReader;
+      ((ORFileReader*) fOrcaFile)->AddFileToProcess(fFileName);
+    } else {
+        unsigned int num_tries = 0;
+        if(keepAliveSocket) {
+            char buff[64];
+            if (reconnectAttempts) {
+                sprintf(buff, "%d", (int)reconnectAttempts);
+            } else {
+                strcpy(buff, "infinite");
+            }
+                cout << "Setting Socket to stay alive: " << endl;
+                cout << "Sleep time: " << (int)timeToSleep << " Reconnection attempts: " << buff << endl;
+        }
+        do {
+                fOrcaFile = new ORSocketReader(readerArg.substr(0, iColon).c_str(), 
+                                  atoi(readerArg.substr(iColon+1).c_str()));
+
+                if (fOrcaFile->OKToRead()) break;
+                delete fOrcaFile;
+                num_tries++;
+                sleep(timeToSleep);
+        } while (keepAliveSocket && (reconnectAttempts == 0 || num_tries < reconnectAttempts));
+      }
+
 
       LoadRootFile();
       events.SetRun( fRun );

@@ -7,7 +7,9 @@
 #include "ORMTCDecoder.hh"
 #include "ORPMTDecoder.hh"
 #include "ORRunDecoder.hh"
+#include "ORPMTBaseCurrentDecoder.hh"
 #include "ORCaen1720Decoder.hh"
+#include "ORCMOSDecoder.hh"
 
 #include <time.h>
 #include <map>
@@ -31,6 +33,7 @@ class ORViewerProcessor : public ORCompoundDataProcessor
     clock_t fViewerClock; 
     UInt_t fViewerLastMtcGtid;
     UInt_t fViewerCurrentMtcGtid;
+    std::vector<int> fViewerLastCMOSTime;
 
     std::vector<double> fViewerTruthData1;
     std::vector<double> fViewerTruthData2;
@@ -55,11 +58,16 @@ class ORViewerProcessor : public ORCompoundDataProcessor
     ORPMTDecoder        fPMTDecoder;
     ORCaen1720Decoder   fCaenDecoder;
     ORRunDecoder        fRunDecoder;
+    ORPMTBaseCurrentDecoder fPMTBaseCurrentDecoder;
+    ORCMOSDecoder        fCMOSDecoder;
+    
 
     UInt_t  fMTCDataId; 
     UInt_t  fPMTDataId; 
     UInt_t  fCaenDataId;
     UInt_t  fRunId;
+    UInt_t  fPMTBaseCurrentDataId;
+    UInt_t  fCMOSDataId;
     UInt_t  fRunStart;  // flags for run start
     bool    fMustSwap;
 
@@ -67,6 +75,8 @@ class ORViewerProcessor : public ORCompoundDataProcessor
     ORDataProcessor* fPMTProcessor;
     ORDataProcessor* fCaenProcessor;
     ORDataProcessor* fRunProcessor;
+    ORDataProcessor* fPMTBaseCurrentProcessor;
+    ORDataProcessor* fCMOSProcessor;
     OrcaReader*      fReader;
 };
 

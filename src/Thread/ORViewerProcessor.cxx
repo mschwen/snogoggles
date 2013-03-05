@@ -15,6 +15,8 @@ using namespace std;
 
 #define GT_MASK     0xffffff            // GTID's are 24 bits
 
+
+
 #define FEC_GT_16(a) (UInt_t)((a)&0x0000FFFF)
 #define FEC_GTID(a)    (ULong_t) (*(a) & 0x0000FFFF) + (ULong_t) ( ( *(a+2) & 0x0000F000 ) >> 12 << 16 ) + (ULong_t) ( ( *(a+2) & 0xF0000000 ) >> 28 << 20 )
 
@@ -67,6 +69,13 @@ ORViewerProcessor::ORViewerProcessor(std::string /*label*/)
 
     fRunProcessor = new ORDataProcessor(&fRunDecoder);
     AddProcessor(fRunProcessor);
+
+    fPMTBaseCurrentProcessor = new ORDataProcessor(&fPMTBaseCurrentDecoder);
+    AddProcessor(fPMTBaseCurrentProcessor);
+
+    fCMOSProcessor = new ORDataProcessor(&fCMOSDecoder);
+    AddProcessor(fCMOSProcessor);
+
 }
 
 
@@ -83,10 +92,13 @@ ORDataProcessor::EReturnCode ORViewerProcessor::StartRun()
 {
     cout << "Got StartRun Signal"  << endl;
 
+    fPMTBaseCurrentDataId = fPMTBaseCurrentProcessor->GetDataId();
+    fCMOSDataId = fCMOSProcessor->GetDataId();
     fMTCDataId = fMTCProcessor->GetDataId();
     fPMTDataId = fPMTProcessor->GetDataId();
     fCaenDataId = fCaenProcessor->GetDataId();
     fRunId = fRunProcessor->GetDataId();
+    fViewerLastCMOSTime.resize(16*19);
 
     fViewerTruthData1.resize(10752);
     fViewerTruthData2.resize(10752);
@@ -131,20 +143,20 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
 
         fViewerLastMtcGtid = fViewerCurrentMtcGtid;
 
-       for(int p=0;p<9727;p++) {
-         if(fViewerTruthData1[p]) {
+//       for(int p=0;p<9727;p++) {
+//         if(fViewerTruthData1[p]) {
           //normalize data by hit count, etc
-          fViewerCalData2[p] = log(fViewerTruthData2[p])*200;
-          fViewerCalData4[p] = log(fViewerTruthData3[p])*50;
+ //         fViewerCalData2[p] = log(fViewerTruthData2[p])*200;
+ //         fViewerCalData4[p] = log(fViewerTruthData3[p])*50;
 
 
-          fViewerTruthData1[p]=fViewerTruthData1[p];
-          fViewerTruthData2[p]=fViewerTruthData2[p]*10/fGTCount;
-          fViewerTruthData3[p]=fViewerTruthData3[p]*10/fGTCount;
-          fViewerTruthData4[p]=fViewerTruthData4[p]*10/fGTCount;
+//          fViewerTruthData1[p]=fViewerTruthData1[p];
+//          fViewerTruthData2[p]=fViewerTruthData2[p]*10/fGTCount;
+//          fViewerTruthData3[p]=fViewerTruthData3[p]*10/fGTCount;
+//          fViewerTruthData4[p]=fViewerTruthData4[p]*10/fGTCount;
 
-         }
-       }
+//         }
+//       }
 
         Viewer::DataStore::GetInstance().Add( fViewerTruthData1, 
                                               fViewerTruthData2, 
@@ -193,8 +205,8 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
           fViewerCalData1[p]=0;
 
           fViewerUncalData4[p]=0;
-          fViewerUncalData3[p]=0;
-          fViewerUncalData2[p]=0;
+          //fViewerUncalData3[p]=0;
+          //fViewerUncalData2[p]=0;
           fViewerUncalData1[p]=0;
 
 
@@ -205,6 +217,63 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
       fViewerClock = clock();
       fGTCount = 0;
   } 
+ 
+  //process CMOS rates     
+  if (thisDataId == fCMOSDataId)  {
+    
+//    cout << "Got CMOS rates from crate "<< record[1] << endl;
+    int sloto; 
+    for(UInt_t slot = 0; slot<8; slot++) {
+      if(fCMOSDecoder.SlotMask(record) == 65280) {
+        sloto = slot;
+      }
+      else {
+         sloto = slot+8;
+      }
+      
+      for(UInt_t channel = 0; channel<32; channel++) {
+          fViewerUncalData2[512*fCMOSDecoder.CrateNum(record)+32*sloto+channel] = (double)((fCMOSDecoder.CMOSCounterForSlotAndChannel(slot, channel, record))- fViewerUncalData2[512*fCMOSDecoder.CrateNum(record)+32*sloto+channel])/2.5;
+        
+        if(fViewerLastCMOSTime[16*fCMOSDecoder.CrateNum(record)+sloto] != 0) {
+//          fViewerUncalData2[512*fCMOSDecoder.CrateNum(record)+32*sloto+channel] = (double)(fCMOSDecoder.CMOSCounterForSlotAndChannel(sloto, channel, record)- fViewerUncalData2[512*fCMOSDecoder.CrateNum(record)+32*sloto+channel])/(double)(tRecordTime-fViewerLastCMOSTime[sloto]);
+          fViewerLastCMOSTime[16*fCMOSDecoder.CrateNum(record)+sloto] = 0;
+        }
+        else
+        {
+          fViewerLastCMOSTime[16*fCMOSDecoder.CrateNum(record)+sloto] = clock();
+//          fViewerUncalData2[512*fCMOSDecoder.CrateNum(record)+32*sloto+channel] = (double)(fCMOSDecoder.CMOSCounterForSlotAndChannel(slot, channel, record));
+        }
+    }
+  }
+}
+        //cout << "CMOS: " << record[1] << "/" << sloto << "/" << channel << ": " << (double)fCMOSDecoder.CMOSCounterForSlotAndChannel(slot, channel, record) << " ClocK: " << fCMOSDecoder.TimeStamp(record) << " Delay: " << fCMOSDecoder.Delay(record) << "Slot Mask: " << fCMOSDecoder.SlotMask(record) << endl;
+
+//        cout << "CMOS: " << record[1] << "/" << sloto << "/" << channel << ": " << fViewerCalData1[512*fCMOSDecoder.CrateNum(record)+32*sloto+channel]  << " ClocK: " << fCMOSDecoder.TimeStamp(record) << " Delay: " << fCMOSDecoder.Delay(record) << "Slot Mask: " << fCMOSDecoder.SlotMask(record) << endl;
+          
+   //     }
+  //      else {
+ //         fViewerCalData1[512*fCMOSDecoder.CrateNum(record)+32*sloto+channel] =   (double)fCMOSDecoder.CMOSCounterForSlotAndChannel(slot, channel, record) ;
+  //      }
+  //      }
+  //    }
+  //  fViewerLastCMOSTime = (char*)fCMOSDecoder.TimeStamp(record);
+  //  }
+
+  
+
+
+  //process PMT base currents
+  if (thisDataId == fPMTBaseCurrentDataId)  {
+//  cout << "Got PMT Base Current Data from crate: "<< record[1] << "Slot: " << record[2] << endl;
+  for(UInt_t slot = 0; slot<16; slot++) {
+    for(UInt_t channel = 0; channel<32; channel++) {
+     // cout << record[1] << "/" << slot << "/" << channel << ": " << (unsigned short)fPMTBaseCurrentDecoder.ADCForSlotAndChannel(slot, channel, record) << endl;
+      //fViewerCalData1[512*record[1]+32*slot+channel] = (double)fPMTBaseCurrentDecoder.ADCForSlotAndChannel(slot, channel, record);
+      fViewerUncalData3[512*record[1]+32*slot+channel] = (double)fPMTBaseCurrentDecoder.ADCForSlotAndChannel(slot, channel, record);
+
+    }
+  } 
+  }
 
   //Deal with MTC trigger data
   /*
@@ -420,12 +489,12 @@ ORDataProcessor::EReturnCode ORViewerProcessor::ProcessDataRecord(UInt_t* record
               //  fViewerCalData4[(int)FEC_LCN(record[recnum-2])] ++;
                  
 
-                fViewerUncalData1[(int)FEC_LCN(record[recnum-2])]++;
-                fViewerUncalData2[(int)FEC_LCN(record[recnum-2])] = (double) ((FEC_GTID(&record[recnum-2]))%4096 );
-                fViewerUncalData3[(int)FEC_LCN(record[recnum-2])] = (double)((FEC_GTID(&record[recnum-2])-fViewerLastMtcGtid)+500);
-
-                fViewerUncalData4[(int)FEC_LCN(record[recnum-2])] += FEC_SYN(record[recnum-2]);
-               cout << "PMTGTID: " << FEC_GTID(&record[recnum-2]) << endl;
+                fViewerUncalData1[(int)FEC_LCN(record[recnum-2])] ++;
+//                fViewerUncalData2[(int)FEC_LCN(record[recnum-2])] = (double) ((FEC_GTID(&record[recnum-2]))%4096 );
+//                fViewerUncalData4[(int)FEC_LCN(record[recnum-2])] = (double)((FEC_GTID(&record[recnum-2])-fViewerLastMtcGtid)+500);
+                fViewerUncalData4[(int)FEC_LCN(record[recnum-2])] = (double)((FEC_GTID(&record[recnum-2])-fViewerLastMtcGtid)+500);
+//                fViewerUncalData4[(int)FEC_LCN(record[recnum-2])] += FEC_SYN(record[recnum-2]);
+              // cout << "PMTGTID: " << FEC_GTID(&record[recnum-2]) << endl;
 
 
 
@@ -459,7 +528,10 @@ else if (thisDataId == 1572864) {
   for(int ss = 2; ss < 18; ss++) {
    // cout << "fecMemLevel[" << ss-2 << "]: " << record[ss] << endl;
     for(int cc = 0; cc < 32; cc++) {
-      fViewerCalData3[512*record[1]+32*(ss-2)+cc] =  max(((double)record[ss]+1)*40,fViewerCalData3[512*record[1]+32*(ss-2)+cc] );
+      fViewerCalData1[512*record[1]+32*(ss-2)+cc] =  max(((double)record[ss]+1),fViewerCalData1[512*record[1]+32*(ss-2)+cc] );
+      for(int cc=31; cc > (int)(fViewerCalData1[512*record[1]+32*(ss-2)]*.32); cc--) { 
+        fViewerCalData1[512*record[1]+32*(ss-2)+cc] = 0;
+      }
     }
 
     }

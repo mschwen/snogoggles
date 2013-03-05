@@ -58,7 +58,7 @@ private:
   Semaphore& fSemaphore;
 
   /// Main ORCA file to load from
-  ORFileReader* fOrcaFile;
+  ORVReader* fOrcaFile;
 
   /// Root file part for the PMTProperties 
   TFile* fFile;

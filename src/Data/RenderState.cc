@@ -14,14 +14,14 @@ map< RIDS::EDataSource, map< RIDS::EDataType, double > > RenderState::fsDefaultS
 void
 RenderState::Initialise()
 {
-  fsTypeNames[RIDS::eTAC] = string("TAC");
-  fsTypeNames[RIDS::eQHL] = string("QHL");
-  fsTypeNames[RIDS::eQHS] = string("QHS");
-  fsTypeNames[RIDS::eQLX] = string("QLX");
+  fsTypeNames[RIDS::eTAC] = string("TAC_max");
+  fsTypeNames[RIDS::eQHL] = string("QHL_sum");
+  fsTypeNames[RIDS::eQHS] = string("QHS_sum");
+  fsTypeNames[RIDS::eQLX] = string("QLX_sum");
   fsSourceNames[RIDS::eMC] = string("MC");
-  fsSourceNames[RIDS::eTruth] = string("Truth");
-  fsSourceNames[RIDS::eUnCal] = string("UnCal");
-  fsSourceNames[RIDS::eCal] = string("Cal");
+  fsSourceNames[RIDS::eTruth] = string("Data");
+  fsSourceNames[RIDS::eUnCal] = string("Detector");
+  fsSourceNames[RIDS::eCal] = string("Slots");
   fsSourceNames[RIDS::eScript] = string("Script");
 
   const ConfigurationTable* renderConfig = GUIProperties::GetInstance().GetConfiguration( "RenderState" );

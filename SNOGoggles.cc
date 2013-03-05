@@ -85,6 +85,8 @@ int main( int argc, char *argv[] )
       Semaphore sema;
       if( options.fArgument.substr( options.fArgument.size() - 4 ) == string( "root" ) )
         loadData = new LoadRootFileThread( options.fArgument, sema );
+      else if ( options.fArgument.find(":") != string::npos) 
+        loadData = new LoadOrcaFileThread( options.fArgument, sema );
       else if ( options.fArgument.substr( 0,3 ) == string( "Run" ) )
         loadData = new LoadOrcaFileThread( options.fArgument, sema );
       else

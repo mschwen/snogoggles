@@ -45,11 +45,12 @@ env.Append(LINKFLAGS=["-g"])
 env.Append( CPPPATH = [ os.environ["VIEWERROOT"] + "/include" ] )
 
 #add orcaroot
-env.Append( CPPPATH = "/home/mschwen/OrcaRoot/IO" )
-env.Append( CPPPATH = "/home/mschwen/OrcaRoot/Processors" )
-env.Append( CPPPATH = "/home/mschwen/OrcaRoot/Decoders" )
-env.Append( CPPPATH = "/home/mschwen/OrcaRoot/Util" )
-env.Append( CPPPATH = "/home/mschwen/OrcaRoot/Management" )
+env.Append( CPPPATH = "/home/mschwen/snoing/install/OrcaRoot/IO" )
+env.Append( CPPPATH = "/home/mschwen/snoing/install/OrcaRoot/Processors" )
+env.Append( CPPPATH = "/home/mschwen/snoing/install/OrcaRoot/Decoders" )
+env.Append( CPPPATH = "/home/mschwen/snoing/install/OrcaRoot/Util" )
+env.Append( CPPPATH = "/home/mschwen/snoing/install/OrcaRoot/Management" )
+env.Append( CPPPATH = "/home/mschwen/snoing/install/orcaroot_snot_reader/Decoders")
 
 
 # Creates SNOGoggles Library
